@@ -1,8 +1,8 @@
 import http from 'http'
 
-const get = (url) => {
+const get = (url, options = {}) => {
     return new Promise((resolve, reject) => {
-    const req = http.get(url, res => {
+    const req = http.get(url, options, res => {
       let rawData = '';
 
       res.on('data', chunk => {
