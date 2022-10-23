@@ -1,5 +1,4 @@
 import * as api from "./api.js";
-import { jest } from "@jest/globals";
 import ipLookup from "./index.js";
 
 describe("ipLookup", () => {

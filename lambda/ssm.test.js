@@ -1,5 +1,4 @@
 import AWS from "aws-sdk";
-import { jest } from "@jest/globals";
 import ssm from "./ssm";
 
 describe("retrieve", () => {

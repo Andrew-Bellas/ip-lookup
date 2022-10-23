@@ -1,4 +1,3 @@
-import { jest } from "@jest/globals";
 import axios from "axios";
 import { fetchIPAPI, fetchVirusTotal } from "./api";
 import ssm from "./ssm";
