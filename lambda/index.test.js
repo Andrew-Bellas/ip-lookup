@@ -1,5 +1,5 @@
 import * as api from "./api.js";
-import ipLookup from "./index.js";
+import { ipLookup } from "./index.js";
 
 describe("ipLookup", () => {
   it('Fetches the result of multiple APIs and returns the combined result', async () => {
