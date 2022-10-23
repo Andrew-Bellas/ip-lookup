@@ -22,15 +22,13 @@ export const handler = async (event) => {
       };
     }
 
-    const result = ipLookup(ipAddressOrDomain);
+    const result = await ipLookup(ipAddressOrDomain);
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        result,
-      }),
+      body: JSON.stringify(result),
     };
   } catch (e) {
     return {

@@ -57,22 +57,23 @@ resource "aws_lambda_function" "ip_lookup" {
   s3_bucket = aws_s3_bucket.lambda_bucket.id
   s3_key    = aws_s3_object.lambda_ip_lookup.key
 
-  runtime = "nodejs16.x"
+  runtime = "nodejs14.x"
   handler = "index.handler"
 
-  source_code_hash = data.archive_file.lambda_hello_world.output_base64sha256
+  source_code_hash = data.archive_file.lambda_ip_lookup.output_base64sha256
 
   role = aws_iam_role.lambda_exec.arn
 }
 
-resource "aws_cloudwatch_log_group" "hello_world" {
-  name = "/aws/lambda/${aws_lambda_function.hello_world.function_name}"
+resource "aws_cloudwatch_log_group" "ip_lookup" {
+  name = "/aws/lambda/${aws_lambda_function.ip_lookup.function_name}"
 
   retention_in_days = 30
 }
 
+
 resource "aws_iam_role" "lambda_exec" {
-  name = "serverless_lambda"
+  name = "IPLookupLambda"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -82,13 +83,98 @@ resource "aws_iam_role" "lambda_exec" {
       Sid    = ""
       Principal = {
         Service = "lambda.amazonaws.com"
-      }
-      }
-    ]
+    } }]
   })
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_policy" {
   role       = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy" "my-policy" {
+  name = "LambdaSSMReadOnly"
+  role = aws_iam_role.lambda_exec.id
+
+
+  # This policy is exclusively available by my-role.
+  policy = <<-EOF
+ {
+   "Version": "2012-10-17",
+   "Statement": [
+     {
+       "Sid": "",
+       "Effect": "Allow",
+       "Action": [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:GetParametersByPath"
+       ],
+      "Resource": [
+        "*"
+      ]
+     }
+   ]
+ }
+ EOF
+}
+
+resource "aws_apigatewayv2_api" "lambda" {
+  name          = "IPLookupGateway"
+  protocol_type = "HTTP"
+}
+
+resource "aws_apigatewayv2_stage" "lambda" {
+  api_id = aws_apigatewayv2_api.lambda.id
+
+  name        = "serverless_lambda_stage"
+  auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gw.arn
+
+    format = jsonencode({
+      requestId               = "$context.requestId"
+      sourceIp                = "$context.identity.sourceIp"
+      requestTime             = "$context.requestTime"
+      protocol                = "$context.protocol"
+      httpMethod              = "$context.httpMethod"
+      resourcePath            = "$context.resourcePath"
+      routeKey                = "$context.routeKey"
+      status                  = "$context.status"
+      responseLength          = "$context.responseLength"
+      integrationErrorMessage = "$context.integrationErrorMessage"
+      }
+    )
+  }
+}
+
+resource "aws_apigatewayv2_integration" "ip_lookup" {
+  api_id = aws_apigatewayv2_api.lambda.id
+
+  integration_uri    = aws_lambda_function.ip_lookup.invoke_arn
+  integration_type   = "AWS_PROXY"
+  integration_method = "POST"
+}
+
+resource "aws_apigatewayv2_route" "ip_lookup" {
+  api_id = aws_apigatewayv2_api.lambda.id
+
+  route_key = "GET /{ipAddressOrDomain}"
+  target    = "integrations/${aws_apigatewayv2_integration.ip_lookup.id}"
+}
+
+resource "aws_cloudwatch_log_group" "api_gw" {
+  name = "/aws/api_gw/${aws_apigatewayv2_api.lambda.name}"
+
+  retention_in_days = 30
+}
+
+resource "aws_lambda_permission" "api_gw" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.ip_lookup.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/*/*"
 }

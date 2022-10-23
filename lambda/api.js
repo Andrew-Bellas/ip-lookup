@@ -6,7 +6,7 @@ export const fetchIPAPI = async (ipAddressOrDomain) => {
   const url = `http://api.ipapi.com/${ipAddressOrDomain}?access_key=${key}`;
   try {
     const result = await axios.get(url);
-    return result; 
+    return result?.data 
   } catch {
     return null;
   }
