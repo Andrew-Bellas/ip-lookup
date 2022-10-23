@@ -1,10 +1,10 @@
-import { fetchIPAPI, fetchVirusTotal } from "./api/api.js";
+import { fetchIPAPI, fetchVirusTotal } from "./api.js";
 
-const ipLookup = async (ip, domain) => {
-  if (ip && domain) {
-    throw new Error('Bad Request');
-  }
+const domainLookup = async (domain) => {
+  // TODO
+}
 
+const ipLookup = async (ip) => {
   const result = {
     ipapi: await fetchIPAPI(ip),
     virusTotal: await fetchVirusTotal(ip)
