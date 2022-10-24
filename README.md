@@ -11,3 +11,5 @@ The IP and Domain data is gathered from:
 - AWS API Gateway
 - AWS SSM
 - Terraform 
+- Jest
+- Eslint
