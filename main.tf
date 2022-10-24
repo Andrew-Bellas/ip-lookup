@@ -160,7 +160,7 @@ resource "aws_apigatewayv2_integration" "ip_lookup" {
 resource "aws_apigatewayv2_route" "ip_lookup" {
   api_id = aws_apigatewayv2_api.lambda.id
 
-  route_key = "GET /{ipAddressOrDomain}"
+  route_key = "GET /"
   target    = "integrations/${aws_apigatewayv2_integration.ip_lookup.id}"
 }
 
