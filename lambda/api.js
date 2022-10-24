@@ -5,8 +5,7 @@ export const fetchIPAPI = async (ipAddressOrDomain) => {
   const key = await ssm.retrieve("IPAPIAccessKey", true);
   const url = `http://api.ipapi.com/${ipAddressOrDomain}?access_key=${key}`;
   try {
-    // const result = await axios.get(url);
-    const result = { data: {} }
+    const result = await axios.get(url);
     return result.data 
   } catch (e) {
     console.error(e)

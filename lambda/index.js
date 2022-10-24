@@ -30,17 +30,17 @@ export const handler = async (event) => {
   } 
 
   try {    
-    const { ipAddress, domainUrl: domainName } = event.queryStringParameters;
+    const { ipAddress, domainName } = event.queryStringParameters;
 
     if (!ipAddress && !domainName) {
-      returnBadRequest("Missing IP address or domain")
+      return returnBadRequest("Missing IP address or domain")
     }
 
     if (ipAddress && domainName) {
-      returnBadRequest("Request contains both an IP Address and a domain name")
+      return returnBadRequest("Request contains both an IP Address and a domain name")
     }
 
-    const result = ipAddress ? await ipLookup(ipAddress) : domainLookup(domainName);
+    const result = ipAddress ? await ipLookup(ipAddress) : await domainLookup(domainName);
     
     return {
       statusCode: 200,
