@@ -1,5 +1,5 @@
 import axios from "axios";
-import { fetchIPAPI, fetchVirusTotal } from "./api";
+import { fetchIPAPI, fetchVirusTotalByIP } from "./api";
 import ssm from "./ssm";
 
 describe("fetchIPAPI", () => {
@@ -25,11 +25,11 @@ describe("fetchIPAPI", () => {
   });
 });
 
-describe("fetchVirusTotal", () => {
+describe("fetchVirusTotalByIP", () => {
   it("Returns the result from the VirusTotal API", async () => {
     ssm.retrieve = jest.fn().mockResolvedValue("123456789");
     const axiosSpy = jest.spyOn(axios, "get").mockResolvedValue({ data: { data: { attributes: [] } } });
-    const result = await fetchVirusTotal("1.1.1.1");
+    const result = await fetchVirusTotalByIP("1.1.1.1");
     expect(result).toEqual([]);
     const expected = "http://www.virustotal.com/api/v3/ip_addresses/1.1.1.1";
     expect(axiosSpy).toHaveBeenCalledWith(expected, { headers: {'x-apikey': '123456789'}});
@@ -38,11 +38,11 @@ describe("fetchVirusTotal", () => {
   it("Returns null if the VirusTotal API does not return a result", async () => {
     ssm.retrieve = jest.fn().mockResolvedValue("123456789");
     jest.spyOn(axios, "get").mockRejectedValue(null);
-    const result = await fetchVirusTotal("1.1.1.1");
+    const result = await fetchVirusTotalByIP("1.1.1.1");
     expect(result).toEqual(null);
   });
 
   it("Throws an error if the API token cannot be retrieved", async () => {
     ssm.retrieve = jest.fn().mockRejectedValue(new Error());
-    await expect(fetchVirusTotal()).rejects.toThrow();
+    await expect(fetchVirusTotalByIP()).rejects.toThrow();
   });});
