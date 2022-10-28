@@ -28,7 +28,7 @@ export const handler = async (event) => {
   });
 
   try {
-    const { ipAddress, domainName } = event.queryStringParameters;
+    const { ipAddress, domainName } = event.queryStringParameters || {};
 
     if (!ipAddress && !domainName) {
       return returnBadRequest('Missing IP address or domain');
